@@ -25,7 +25,7 @@ python -m pytest -q
 3. 在「班次留档」查看历史版本、切回选中的班次，或用工具条「重跑班次」复算当前版本。同样的输入和方案沿用原班次编号。
 4. 点「下载证据」获取当前查看版本的 JSON。文件带输入摘要、逐行隔离、时间线、试算差量和逐站勾稽。
 
-## 七个业务入口
+## 八个业务入口
 
 | 阶段 | API | 站务操作 |
 |---|---|---|
@@ -34,6 +34,7 @@ python -m pytest -q
 | 借还回放 | `GET /api/replay` | 按实际发生时点复原库存 |
 | 溢出需求 | `GET /api/demand` | 核对各站未成交尝试和 15 分钟槽位 |
 | 调拨试算 | `GET /api/dispatch`，`POST /api/dispatch/preview`，`POST /api/dispatch/publish` | 编辑、试算并发布调拨行程 |
+| 放行结论 | `GET /api/release`，`POST /api/release/publish` | 核对每辆车的点检维修依据、行程换车或停开，提交补单 |
 | 库存勾稽 | `GET /api/inventory` | 核对库存、在骑、在途和入账记录 |
 | 班次留档 | `GET /api/runs`，`POST /api/runs/rerun`，`POST /api/runs/restore` | 重跑、回切历史、下载证据 |
 

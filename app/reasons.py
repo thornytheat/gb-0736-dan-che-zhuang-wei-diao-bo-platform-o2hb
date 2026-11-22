@@ -20,4 +20,7 @@ REASONS = {
     'NO_ACCEPTED_EVENTS': '无可采信事件，请修正文件', 'BODY_TOO_LARGE': '文件体积超限',
     'BAD_REQUEST': '请求格式无效', 'REPLAY_DRIFT': '重跑结果与历史记录不一致',
     'STORE_UNAVAILABLE': '班次存储暂不可用，请重试',
+    'BAD_ORDER': '点检或维修单格式无效', 'ORDER_CONFLICT': '同一单号对应不同内容',
+    'INSPECTION_MISSING': '缺少有效点检签字', 'QC_PENDING': '维修质检待签字',
+    'ROUTE_BROKEN': '前序行程停开，车辆位置不符',
 }

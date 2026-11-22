@@ -35,6 +35,9 @@ function paint() {
     }
     stages.dispatch(previewResult || data, meta.shift, Boolean(previewResult));
     $('publish').disabled = !previewedLegs || runId() !== activeId() || busy;
+  } else if (current === 'release') {
+    stages.release(data);
+    $('release-publish').disabled = runId() !== activeId() || busy;
   } else stages[current](data, meta.shift, extra);
 }
 
@@ -84,7 +87,7 @@ async function mutate(action, success) {
   if (busy) return;
   busy = true;
   const token = revision;
-  const form = current === 'dispatch' ? $('dispatch-form') : current === 'intake' ? $('upload-form') : null;
+  const form = current === 'dispatch' ? $('dispatch-form') : current === 'intake' ? $('upload-form') : current === 'release' ? $('release-form') : null;
   if (form) form.inert = true;
   $('rerun').disabled = $('restore').disabled = true;
   notice('正在计算…');
@@ -148,6 +151,17 @@ $('publish').addEventListener('click', () => mutate(() => post('/api/dispatch/pu
   await load(null);
   notice('方案已发布');
 }));
+$('release-form').addEventListener('submit', event => {
+  event.preventDefault();
+  let orders;
+  try { orders = JSON.parse($('release-input').value); }
+  catch { notice('补单 JSON 无法解析', true); return; }
+  mutate(() => post('/api/release/publish', {expected: runId(), orders}), async result => {
+    $('release-input').value = '';
+    await load(null);
+    notice(result.created ? '放行结论已发布' : result.changed ? '已切回一致的历史版本' : '补单与台账一致 · 未新增放行版本');
+  });
+});
 $('sample-plan').addEventListener('click', () => {
   if (busy) return;
   fillDraft(meta.sample_plan, meta.shift, invalidate);

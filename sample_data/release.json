@@ -1,0 +1,5 @@
+[
+  {"order_id": "D-0901", "truck": "T-01", "kind": "inspection", "result": "pass", "signed_at": "2026-11-20T06:50:00+08:00"},
+  {"order_id": "D-0902", "truck": "T-02", "kind": "inspection", "result": "pass", "signed_at": "2026-11-20T06:55:00+08:00"},
+  {"order_id": "W-0213", "truck": "T-02", "kind": "maintenance", "system": "brakes", "finished_at": "2026-11-20T07:40:00+08:00", "qc_signed_at": null}
+]

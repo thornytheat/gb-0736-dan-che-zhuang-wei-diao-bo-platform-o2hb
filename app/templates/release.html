@@ -1,0 +1,21 @@
+<div class="stage" id="stage-release" hidden>
+  <section class="panel">
+    <div class="panel__head"><div><h2>车辆放行结论</h2><span class="subtle" id="release-version"></span></div></div>
+    <div class="ledger-scroll" id="release-trucks"></div>
+  </section>
+  <section class="panel">
+    <div class="panel__head"><h2>原定行程处置</h2><span class="subtle">停开行程与依据随版本留档，不会被后续补单删除</span></div>
+    <div class="ledger-scroll" id="release-legs"></div>
+  </section>
+  <section class="panel">
+    <div class="panel__head"><div><h2>点检与维修台账</h2><span class="subtle" id="release-active"></span></div></div>
+    <div class="ledger-scroll" id="release-orders"></div>
+    <form id="release-form">
+      <div class="panel__body">
+        <label for="release-input">补单 JSON（点检单或维修单数组，同一单号重试不会新增第二份放行）</label>
+        <textarea id="release-input" rows="5" spellcheck="false" placeholder='[{"order_id":"W-0213-QC","truck":"T-02","kind":"maintenance","system":"brakes","finished_at":"2026-11-20T07:40:00+08:00","qc_signed_at":"2026-11-20T14:20:00+08:00"}]'></textarea>
+      </div>
+      <div class="panel__body actions form-actions"><button class="btn btn--primary" id="release-publish" type="submit">发布放行结论</button></div>
+    </form>
+  </section>
+</div>

@@ -53,6 +53,8 @@ td.num, th.num { text-align: right; }
 .band progress { width: 100%; height: 8px; accent-color: var(--warn); }
 .leg-editor input[type=number] { width: 60px; }
 .leg-editor input[type=datetime-local] { width: 174px; }
+#release-form label { display: block; color: var(--ink-3); font-size: 11px; margin-bottom: 6px; }
+#release-input { width: 100%; box-sizing: border-box; font: 12px var(--mono); border: 1px solid var(--line-2); border-radius: var(--radius-sm); padding: 8px; resize: vertical; }
 .inline-form input[type=file] { max-width: 100%; }
 @media (max-width: 520px) {
   .panel__head { flex-wrap: wrap; }

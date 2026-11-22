@@ -127,6 +127,33 @@ export function dispatch(data, shift, draft = false) {
     [clock(row.at), station(row.station), row.id, kind(row.kind), outcome(row.before), outcome(row.after), row.line]), '没有租还判定变化');
 }
 
+const RELEASE_ACTIONS = {kept: '照常', swapped: '换车', cancelled: '停开'};
+
+export function release(data) {
+  const {conclusion, orders, version, published, active_version} = data;
+  const held = conclusion.trucks.filter(row => row.status === 'held');
+  const cancelled = conclusion.legs.filter(row => row.action === 'cancelled');
+  const swapped = conclusion.legs.filter(row => row.action === 'swapped');
+  kpis([['放行车辆', conclusion.trucks.length - held.length, '辆'], ['停开待签', held.length, '辆', held.length ? 'warn' : ''],
+    ['行程停开', cancelled.length, '趟', cancelled.length ? 'warn' : ''], ['换车执行', swapped.length, '趟'],
+    ['结论版本', published ? '已发布' : '待发布', '', published ? 'ok' : 'warn']]);
+  $('release-version').textContent = `版本 ${version.slice(0, 12)} · ${published ? '与已发布一致' : '班次已更新，待重新发布'}`;
+  $('release-active').textContent = active_version ? `当前发布 ${active_version.slice(0, 12)}` : '尚未发布';
+  table('release-trucks', ['车辆', '结论', '判定时点', '点检依据', '维修依据', '待办事项'], conclusion.trucks.map(row => [
+    row.truck, row.status === 'released' ? '放行' : '停开待签', clock(row.at),
+    row.basis.inspection.join('、') || '—', row.basis.maintenance.join('、') || '—',
+    row.holds.map(hold => label(hold.code)).join('；') || '—']));
+  table('release-legs', ['行程', '原定车辆', '处置', '执行车辆', '停开/换车依据', '原行程'], conclusion.legs.map(row => [
+    row.leg.id, row.leg.truck, RELEASE_ACTIONS[row.action],
+    row.action === 'swapped' ? row.to_truck : row.action === 'kept' ? row.truck : '—',
+    (row.basis || []).join('、') || (row.reason || []).map(hold => label(hold.code)).join('；') || '—',
+    `${row.leg.from}→${row.leg.to} ${clock(row.leg.depart)} 出发 ×${row.leg.count}`]));
+  table('release-orders', ['单号', '车辆', '类型', '系统', '签字/完工时点', '质检签字'], orders.map(row => [
+    row.order_id, row.truck, row.kind === 'inspection' ? '点检单' : '维修单', row.system || '—',
+    clock(row.kind === 'inspection' ? row.signed_at : row.finished_at),
+    row.kind === 'maintenance' ? (row.qc_signed_at ? clock(row.qc_signed_at) : '待签') : '—']));
+}
+
 export function inventory(data, shift) {
   const row = data[$('inventory-mode').value];
   const station = names(shift);

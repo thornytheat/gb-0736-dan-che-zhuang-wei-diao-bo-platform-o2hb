@@ -15,6 +15,9 @@
 | 同上 | `note` | 可空，保留引号内换行 |
 | `sample_data/capacity.csv` | `station`、`revision`、`start`、`end`、`slots`、`note` | 容量修订的区间、桩数与备注。`0` 表示关站 |
 | `sample_data/plan.json` | `id`、`truck`、`from`、`to`、`depart`、`arrive`、`count` | 行程键、车辆、装卸地点与时点、装卸车辆数。行程时点支持毫秒 |
+| `sample_data/release.json` | `order_id`、`truck`、`kind` | 点检维修单号、车辆与单据类型 `inspection` 或 `maintenance` |
+| 同上 | `result`、`signed_at` | 点检单专用：`pass` 或 `fail`，以及点检签字时点 |
+| 同上 | `system`、`finished_at`、`qc_signed_at` | 维修单专用：维修系统（如 `brakes`）、完工时点与质检签字时点。`qc_signed_at` 为 `null` 表示质检待签 |
 
 CSV 上限为 256 KiB 和 2000 条逻辑记录。`line` 是记录起始的物理行号。`raw` 保存原始 CSV 字段，字段前后空白在归一列中清除。必填字段的空串、`-`、`N/A`、`NULL` 和 `未知` 单列原因码。同一事件号、站点、租还动作和发生时点相等时，保留收件最早的一行，同收件时点保留源行号最小的一行。一个事件号的有效候选出现业务矛盾时，全部隔离。
 
@@ -36,8 +39,15 @@ CSV 上限为 256 KiB 和 2000 条逻辑记录。`line` 是记录起始的物理
 | `POST /api/dispatch/publish` | JSON `expected`、`legs` | 校验并发布方案 |
 | `POST /api/runs/rerun` | JSON `expected` | 按封存原文件与已发布方案复算 |
 | `POST /api/runs/restore` | JSON `expected`、`target` | 原子回切到归档版本 |
+| `POST /api/release/publish` | JSON `expected`、`orders` | 登记点检维修补单并发布放行结论 |
 
 `expected` 为写入时所见当前班次完整编号。查询七个阶段时可通过 `?run=<编号>` 固定证据版本。写入响应的 `created` 表示新增归档，`changed` 表示响应编号与所提交的 `expected` 不同。无效请求返回 `code`、`message`、`details`。
+
+## 调拨车放行
+
+- 车辆在时点 T 可放行，当且仅当存在 T 前签字且通过的点检单，且该车的每个维修系统都有 T 前完成质检签字的维修单。安全相关维修（如刹车）未质检签字时，现场点检不能替代签字，车辆停开待签。
+- 结论按行程出发时点逐趟判定：车辆可放行且位置衔接则照常；不可放行时寻找同时点、同站、载重足够的已放行车辆换车执行；无车可换则整趟停开，停开依据为待签维修单号，原行程随结论版本留档，后续补签不改写。
+- 补单按 `order_id` 定址：同一单号同一内容重试为幂等，不新增放行版本；同一单号不同内容返回 `ORDER_CONFLICT`。结论版本号由班次编号、台账和结论内容计算摘要。补单登记、版本写入和当前指针在同一事务，失败整体回滚并保留旧版结论。班次切换后需按新班次重新发布放行结论。
 
 运行编号由原始文件的 SHA-256 与字节数、规范化方案和规则版本计算。相同输入重跑会比对已存结果，原生成时间、原耗时与证据文件保持一致。证据 SHA-256 针对 `evidence` 对象，编码为 UTF-8，键名排序、紧凑 JSON，中文直接写入。只有下载包外层另附证据摘要。
 

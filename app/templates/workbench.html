@@ -10,7 +10,7 @@
   <script type="module" src="{{ url_for('static', filename='workbench.js') }}"></script>
 </head>
 <body>
-  {% set stages = [('intake','桩事件收件'),('capacity','容量版本'),('replay','借还回放'),('demand','溢出需求'),('dispatch','调拨试算'),('inventory','库存勾稽'),('runs','班次留档')] %}
+  {% set stages = [('intake','桩事件收件'),('capacity','容量版本'),('replay','借还回放'),('demand','溢出需求'),('dispatch','调拨试算'),('release','放行结论'),('inventory','库存勾稽'),('runs','班次留档')] %}
   <a class="skip" href="#main">跳到工作区</a>
   <div class="app">
     <aside class="rail">
@@ -43,6 +43,7 @@
         {% include 'replay.html' %}
         {% include 'demand.html' %}
         {% include 'dispatch.html' %}
+        {% include 'release.html' %}
         {% include 'inventory.html' %}
         <div class="stage" id="stage-runs" hidden>
           <section class="panel"><div class="panel__head"><h2>历史班次</h2><button class="btn" id="restore" hidden>切回此班次</button></div><div class="ledger-scroll" id="historical"></div></section>

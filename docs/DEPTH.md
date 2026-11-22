@@ -14,6 +14,7 @@
 | M5 调拨试算 | 验证行程并比较逐站、逐笔差量 | `GET /api/dispatch` `POST /api/dispatch/preview` `POST /api/dispatch/publish` | `app/modules/dispatch/constraints.py` `app/modules/dispatch/compare.py` | `tests/test_dispatch.py` |
 | M6 库存勾稽 | 核对各站期末及全网车辆守恒 | `GET /api/inventory` | `app/modules/inventory/service.py` `app/modules/inventory/stations.py` | `tests/test_inventory.py` |
 | M7 班次方案留档 | 幂等重跑、回切和下载归档证据 | `GET /api/runs` `POST /api/runs/rerun` `POST /api/runs/restore` `GET /api/runs/<run_id>/evidence.json` | `app/modules/archive/service.py` `app/modules/archive/evidence.py` `app/store.py` | `tests/test_archive.py` |
+| M8 调拨车放行 | 核对每辆车的点检与维修依据、行程换车或停开，提交补单并发布结论 | `GET /api/release` `POST /api/release/publish` | `app/modules/release/service.py` `app/store.py` | `tests/test_release.py` |
 
 ## 陷阱登记
 
@@ -34,6 +35,9 @@
 | TRAP-23 | `events.csv` 的 0009 正好处于 08:15 | 同一笔计进两个槽位 | 时槽按左闭右开分配 | `app/modules/demand/buckets.py` | `tests/test_demand.py::test_boundary_bucketing_does_not_double_count` |
 | TRAP-25 | `capacity.csv` 002 的同修订容量相互矛盾 | 落点随文件顺序变化 | 隔离同修订冲突，从剩余候选选最高版本 | `app/modules/capacity/versions.py` | `tests/test_capacity.py::test_conflicting_revisions_are_quarantined_together` |
 | TRAP-26 | 样例班次更新后旧页面再发布 | 覆盖当前计划 | 事务内校验当前编号并返回 409 | `app/store.py` | `tests/test_archive.py::test_stale_publish_rejected_and_archive_can_be_restored` |
+| TRAP-27 | 同一补单因重试重复提交 | 生成第二份放行结论 | 单号内容定址，结论版本由运行号、台账和结论计算摘要，重试命中原版本 | `app/store.py` `app/modules/release/service.py` | `tests/test_release.py::test_same_supplement_retry_never_adds_a_second_release` |
+| TRAP-28 | 放行发布中途存储失败 | 台账与版本各写一半 | 补单、版本和当前指针同事务，失败整体回滚保留旧版结论 | `app/store.py` | `tests/test_release.py::test_failed_publish_keeps_previous_version_and_orders` |
+| TRAP-29 | 质检午后补签改写上午结论 | 已停开行程和依据被删除 | 停开判定按行程出发时点，版本只增不改，原行程随版本留档 | `app/modules/release/service.py` | `tests/test_release.py::test_late_qc_keeps_cancelled_leg_and_its_basis` |
 
 ## 对账规则
 
